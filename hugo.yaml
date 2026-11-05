@@ -1,0 +1,99 @@
+baseURL: "https://souryuussl.github.io/tdlai.github.io/"
+languageCode: zh-cn
+locale: zh-cn
+title: TDLAI
+relativeURLs: true
+enableRobotsTXT: true
+enableGitInfo: true
+defaultContentLanguage: zh-cn
+
+module:
+  imports:
+    - path: github.com/hcllmsx/hugo-jijian
+
+taxonomies:
+  category: categories
+  tag: tags
+
+outputs:
+  home: [HTML, RSS, JSON]
+
+params:
+  env: production
+  description: "AI 工具学习、实用攻略与 AI 教育实践。"
+  author: "TDLAI"
+  defaultTheme: auto
+  disableThemeToggle: false
+  ShowReadingTime: true
+  ShowWordCount: true
+  ShowCodeCopyButtons: true
+  ShowToc: true
+  TocOpen: false
+  ShowBreadCrumbs: true
+  ShowPostNavLinks: true
+  ShowShareButtons: false
+  ShowRssButtonInSectionTermList: true
+  cardMode:
+    enabled: true
+    title: "TDLAI"
+    subtitle: "从 AI 工具实测和使用攻略出发，探索 AI 如何帮助学习与教学。持续记录实践、判断与教育场景中的真实问题。<br>合作/交流请在小红书、微信公众号、Bilibili 搜索：<strong>桃大龙的生活实验室</strong>；视频号搜索：<strong>TDLAI</strong>。"
+    imageUrl: "images/tdlai-mascot.jpg"
+    imageTitle: "TDLAI 吉祥物：白色金角龙"
+    imageWidth: 180
+    imageHeight: 180
+    buttons:
+      - name: "探索 AI 学习之旅"
+        url: "/posts/"
+  socialIcons:
+    - name: "bilibili"
+      title: "Bilibili：桃大龙的生活实验室"
+      url: "https://space.bilibili.com/66382812"
+    - name: "xiaohongshu"
+      title: "小红书：桃大龙的生活实验室"
+    - name: "wechat"
+      title: "微信公众号：桃大龙的生活实验室"
+      url: "/images/wechat-qr.jpg"
+      hoverImage: "images/wechat-qr.jpg"
+    - name: "shipinhao"
+      title: "视频号：TDLAI"
+  pagefind:
+    searchUI: modal
+  cover:
+    linkFullImages: true
+    responsiveImages: true
+    hiddenInList: false
+    hiddenInSingle: false
+  editPost:
+    URL: "https://github.com/souryuussl/tdlai.github.io/tree/main/content"
+    Text: "在 GitHub 上编辑"
+    appendFilePath: true
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  highlight:
+    noClasses: false
+
+menu:
+  main:
+    - identifier: tools
+      name: "工具与攻略"
+      pageRef: /categories/tools
+      weight: 10
+    - identifier: education
+      name: "AI+教育"
+      pageRef: /categories/education
+      weight: 20
+    - identifier: frontier
+      name: "前沿观察"
+      pageRef: /categories/frontier
+      weight: 30
+    - identifier: search
+      name: "搜索"
+      url: /search/
+      weight: 40
+
+privacy:
+  youtube:
+    privacyEnhanced: true

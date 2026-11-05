@@ -1,0 +1,197 @@
+:root {
+  --theme: #fbf8fa;
+  --entry: #fffdfd;
+  --primary: #30252b;
+  --secondary: #786b72;
+  --tertiary: #a34f70;
+  --content: #51464c;
+  --hljs-bg: #f1e9ed;
+  --code-bg: #f1e9ed;
+  --border: #eadce2;
+}
+
+.main { max-width: 920px; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+.nav,
+.logo a,
+.menu a {
+  letter-spacing: 0.01em;
+}
+
+.main .profile {
+  padding: 42px 0 30px;
+  overflow: visible;
+}
+
+.profile_inner {
+  gap: 14px;
+}
+
+.profile img {
+  width: 168px;
+  height: 168px;
+  border: 4px solid #e7eff9;
+  border-radius: 50% !important;
+  box-shadow: 0 12px 30px rgba(99, 115, 155, 0.18);
+}
+
+.profile .profile_inner h1 {
+  font-size: clamp(2.1rem, 5vw, 2.9rem);
+  letter-spacing: -0.045em;
+  color: #713e55;
+}
+
+.profile .profile_inner span {
+  max-width: 620px;
+  font-size: 1.02rem;
+  line-height: 1.9;
+  color: var(--secondary);
+}
+
+.profile .profile_inner span strong {
+  color: #713e55;
+  font-weight: 600;
+}
+
+.profile .social-icons,
+.article-guide .social-icons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 2px;
+}
+
+.profile .social-icons a,
+.profile .social-icons .social-icon-no-link,
+.article-guide .social-icons a,
+.article-guide .social-icons .social-icon-no-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 11px;
+  background: var(--primary);
+  color: var(--theme);
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.profile .social-icons a:hover,
+.profile .social-icons .social-icon-no-link:hover,
+.article-guide .social-icons a:hover,
+.article-guide .social-icons .social-icon-no-link:hover {
+  background: #713e55;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.profile .social-icons a svg,
+.profile .social-icons .social-icon-no-link svg,
+.article-guide .social-icons a svg,
+.article-guide .social-icons .social-icon-no-link svg {
+  width: 22px;
+  height: 22px;
+}
+
+.profile .buttons {
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.profile .button {
+  margin: 0;
+  padding: 10px 22px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #f4eff1;
+  font-size: 15px;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.profile .button .button-inner {
+  padding: 0;
+}
+
+.profile .button:hover {
+  color: #713e55;
+  border-color: #e2cbd6;
+  background: #efe5e9;
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+.article-guide {
+  max-width: 620px;
+  margin: 3rem auto 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.article-guide .article-guide-text {
+  margin-bottom: 0;
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--secondary);
+}
+
+.article-guide .article-guide-text strong {
+  color: #713e55;
+  font-weight: 600;
+}
+
+.article-guide .social-icons {
+  margin: 1rem 0 0;
+}
+
+body.home-profile .main {
+  max-width: 960px;
+  min-height: auto;
+}
+
+.post-content { font-size: 18px; line-height: 1.9; }
+.post-content p { margin-bottom: 1.25em; }
+.post-content h2, .post-content h3 { color: #713e55; }
+.post-content h2 { margin-top: 2.25em; }
+.post-entry {
+  border: 1px solid #eadce2;
+  box-shadow: 0 8px 26px rgba(82, 43, 60, 0.045);
+}
+.first-entry .entry-cover img, .post-entry .entry-cover img { object-fit: cover; }
+.social-icons a:hover, .pagination a:hover { color: #a34f70; }
+
+.post-header { margin: 34px auto 30px; }
+.post-title { letter-spacing: -0.035em; line-height: 1.28; }
+.post-meta { line-height: 1.7; }
+
+@media (max-width: 680px) {
+  .profile { padding: 26px 0 18px; }
+  .profile img { width: 132px; height: 132px; }
+  .profile .profile_inner span { font-size: 0.98rem; line-height: 1.8; }
+  .profile .social-icons,
+  .article-guide .social-icons { gap: 10px; }
+  .profile .social-icons a,
+  .profile .social-icons .social-icon-no-link,
+  .article-guide .social-icons a,
+  .article-guide .social-icons .social-icon-no-link { width: 38px; height: 38px; border-radius: 10px; }
+  .profile .social-icons a svg,
+  .profile .social-icons .social-icon-no-link svg,
+  .article-guide .social-icons a svg,
+  .article-guide .social-icons .social-icon-no-link svg { width: 20px; height: 20px; }
+  .profile .button { padding: 9px 18px; }
+  .article-guide { margin-top: 2rem; padding-top: 1.5rem; }
+  .post-content { font-size: 17px; line-height: 1.85; }
+  .post-title { font-size: 1.95rem; }
+}
+
+@media (prefers-color-scheme: light) {
+  :root { --theme: #fbf8fa; --entry: #fffdfd; }
+}

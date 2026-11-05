@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://souryuussl.github.io/tdlai.github.io/sitemap.xml
