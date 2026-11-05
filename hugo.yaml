@@ -1,4 +1,4 @@
-baseURL: "https://souryuussl.github.io/tdlai.github.io/"
+baseURL: "https://souryuussl.github.io/"
 languageCode: zh-cn
 locale: zh-cn
 title: TDLAI
@@ -52,7 +52,7 @@ params:
       title: "小红书：桃大龙的生活实验室"
     - name: "wechat"
       title: "微信公众号：桃大龙的生活实验室"
-      url: "/images/wechat-qr.jpg"
+      url: "images/wechat-qr.jpg"
       hoverImage: "images/wechat-qr.jpg"
     - name: "shipinhao"
       title: "视频号：TDLAI"

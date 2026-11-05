@@ -54,7 +54,7 @@ jobs:
         run: hugo mod get
 
       - name: Build
-        run: hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+        run: hugo --minify
 
       - name: Build Pagefind search index
         run: npx --yes pagefind --site public --output-path public/pagefind
