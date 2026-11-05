@@ -15,9 +15,15 @@ sources:
   - "https://www.edsurge.com/news/survey-most-parents-want-students-to-use-ai-in-school-with-strong-safeguards"
   - "https://edtechmagazine.com/k12/article/2026/11/4-critical-security-considerations-ai-k-12-schools"
   - "https://edtechmagazine.com/higher/article/2026/11/universities-lean-existing-investments-launch-ai-tools"
+# 封面图
+cover:
+  image: "/images/ai-edu-cover.jpg"
+  alt: "AI+教育"
 ---
 
 过去一周的海外教育科技新闻，几乎都绕不开同一个背景：AI 正在从"聊天窗口"走进课堂的日常流程，而学校的制度、培训与采购节奏明显跟不上。以下三个主题，或许能为学校管理者和一线教师提供一些参照。
+
+<!--more-->
 
 ## 政策跑不过模型：学校治理需要"活文档"
 
