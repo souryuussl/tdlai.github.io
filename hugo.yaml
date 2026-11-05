@@ -1,6 +1,5 @@
 baseURL: "https://souryuussl.github.io/"
-languageCode: zh-cn
-locale: zh-cn
+locale: zh-CN
 title: TDLAI
 relativeURLs: true
 enableRobotsTXT: true
