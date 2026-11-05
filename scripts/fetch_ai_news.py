@@ -53,6 +53,7 @@ CST = timezone(timedelta(hours=8))  # 北京时间
 PROMPT_TEMPLATE = """你是一位资深教育科技编辑，长期为教育从业者（一线教师、教研员、学校管理者）撰写「前沿观察」专栏。下面是最近几天从多个海外教育科技渠道抓取的新闻素材（JSON 数组，含 source / title / link / summary 字段）。
 
 写作要求：
+0. 【结构】正文最开头写 2-3 句导语（不加小标题），概括本期最值得教育从业者关注的动向；导语结束后另起一行写 <!--more-->（ Hugo 摘要截断标签），然后再进入第一个 ## 小标题。
 1. 【严格筛选】只采用与课堂教学、学生学习、教师工作、教育政策相关的内容。纯技术发布（新模型、新工具、纯研究）和融资、商业新闻一律忽略，即使它们出现在素材里；某条新闻与教育的关联如果需要拐弯抹角才能建立，就放弃它。若素材整体偏少，宁可写短也不要凑数。
 2. 把筛选后的素材视为一个整体，提炼 2-4 个核心主题（例如：AI 进课堂、教师工作与减负、学习方式变化、教育政策与治理等），围绕主题进行综合报道，严禁逐条罗列或翻译。
 3. 每个主题拟一个有吸引力的中文小标题（## 二级标题），标题要点明对教育工作者的实际意义，不要平铺直叙。
@@ -168,12 +169,22 @@ def build_markdown(today, items, article):
         "# 本期抓取来源",
         "sources:",
     ]
-    seen = set()
+    seen_links = []
     for it in items:
-        if it["link"] and it["link"] not in seen:
-            seen.add(it["link"])
-            lines.append(f'  - "{it["link"]}"')
-    lines += ["---", "", article.strip(), ""]
+        if it["link"] and it["link"] not in seen_links:
+            seen_links.append(it["link"])
+    for link in seen_links:
+        lines.append(f'  - "{link}"')
+    lines += [
+        "# 封面图",
+        "cover:",
+        '  image: "/images/ai-edu-cover.jpg"',
+        '  alt: "AI+教育"',
+        "---",
+        "",
+        article.strip(),
+        "",
+    ]
     return "\n".join(lines)
 
 
