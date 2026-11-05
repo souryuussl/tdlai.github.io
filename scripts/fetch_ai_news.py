@@ -21,14 +21,21 @@ from pathlib import Path
 import feedparser
 
 # ---- 配置 ----
+# (源名称, RSS 地址, 是否启用教育关键词过滤)
+# 泛技术源（如 OpenAI）只保留教育相关条目；教育专门源全量保留
 FEEDS = [
-    ("OpenAI", "https://openai.com/news/rss.xml"),
-    ("Hugging Face", "https://huggingface.co/blog/feed.xml"),
-    ("Google DeepMind", "https://deepmind.google/blog/rss.xml"),
-    # Anthropic 无公开 RSS，用 BAIR（伯克利 AI 研究院）替代
-    ("BAIR", "https://bair.berkeley.edu/blog/feed.xml"),
-    ("MIT Tech Review AI",
-     "https://www.technologyreview.com/topic/artificial-intelligence/feed/"),
+    ("OpenAI", "https://openai.com/news/rss.xml", True),
+    ("EdSurge", "https://www.edsurge.com/feed", False),
+    ("EdTech Higher Ed", "http://feeds.feedburner.com/EdTechHiEd", False),
+    ("EdTech K-12", "http://feeds.feedburner.com/EdTechK12", False),
+]
+
+# 教育关键词：命中标题或摘要即视为教育相关（注意避免 "learning" 这类
+# 会误中 machine learning 的宽泛词）
+EDU_KEYWORDS = [
+    "education", "school", "teacher", "student", "classroom", "university",
+    "college", "campus", "tutor", "pedagogy", "curriculum", "k-12",
+    "higher ed", "academic", "study mode",
 ]
 
 DAYS_BACK = 3        # 只取最近 3 天的条目
@@ -43,27 +50,34 @@ LLM_API_KEY = os.environ.get("LLM_API_KEY", "").strip()
 
 CST = timezone(timedelta(hours=8))  # 北京时间
 
-PROMPT_TEMPLATE = """你是一位资深 AI 科技媒体主编，长期为中文读者撰写「前沿观察」专栏，风格对标「机器之心」「量子位」。下面是最近几天从多个海外 AI 渠道抓取的新闻素材（JSON 数组，含 source / title / link / summary 字段）。
+PROMPT_TEMPLATE = """你是一位资深教育科技编辑，长期为教育从业者（一线教师、教研员、学校管理者）撰写「前沿观察」专栏。下面是最近几天从多个海外教育科技渠道抓取的新闻素材（JSON 数组，含 source / title / link / summary 字段）。
 
 写作要求：
-1. 【严禁逐条翻译】把所有素材视为一个整体，提炼 3-5 个核心主题（例如：模型与产品发布、行业与资本动向、开源社区动态、基础设施与算力、AI 安全与治理等），围绕主题进行综合报道。
-2. 每个主题拟一个有吸引力的中文小标题（## 二级标题），标题要体现判断力和信息量，不要平铺直叙。
-3. 语言精炼、专业、有洞察力，用成熟中文科技媒体的口吻写作。严禁出现「据悉」「该文章指出」「据报道」「值得注意的是」这类生硬翻译腔词汇。
-4. 同一主题下不同来源的新闻要合并叙述，点出事件之间的关联与趋势，而不是罗列清单。
-5. 全文 700-1000 字，段落与列表混排，详略得当。
-6. 文末设「参考来源」一节，用 Markdown 列表统一附上引用过的原新闻链接，格式：- [来源名：文章标题](链接)。
-7. 最后另起一段写：> 编辑注：本文由自动化工作流生成，发布前需人工核对事实与表述。
-8. 只输出正文 Markdown，不要输出 YAML front matter，不要任何额外解释或寒暄。
+1. 【严格筛选】只采用与课堂教学、学生学习、教师工作、教育政策相关的内容。纯技术发布（新模型、新工具、纯研究）和融资、商业新闻一律忽略，即使它们出现在素材里；某条新闻与教育的关联如果需要拐弯抹角才能建立，就放弃它。若素材整体偏少，宁可写短也不要凑数。
+2. 把筛选后的素材视为一个整体，提炼 2-4 个核心主题（例如：AI 进课堂、教师工作与减负、学习方式变化、教育政策与治理等），围绕主题进行综合报道，严禁逐条罗列或翻译。
+3. 每个主题拟一个有吸引力的中文小标题（## 二级标题），标题要点明对教育工作者的实际意义，不要平铺直叙。
+4. 语言专业但不晦涩：面向一线教育从业者，不可避免的技术术语首次出现时用一句话解释清楚。严禁出现「据悉」「该文章指出」「据报道」「值得注意的是」这类生硬翻译腔词汇。
+5. 同一主题下不同来源的新闻要合并叙述，点出事件之间的关联与趋势，而不是罗列清单。
+6. 全文 600-900 字，段落与列表混排，详略得当。
+7. 文末设「参考来源」一节，用 Markdown 列表统一附上引用过的原新闻链接，格式：- [来源名：文章标题](链接)。
+8. 最后另起一段写：> 编辑注：本文由自动化工作流生成，发布前需人工核对事实与表述。
+9. 只输出正文 Markdown，不要输出 YAML front matter，不要任何额外解释或寒暄。
 
 新闻素材：
 """
+
+
+def is_edu_related(title, summary):
+    """判断条目是否与教育相关（命中任一教育关键词）。"""
+    text = (title + " " + summary).lower()
+    return any(kw in text for kw in EDU_KEYWORDS)
 
 
 def fetch_entries():
     """抓取各 RSS 源，返回按时间倒序的条目列表。"""
     cutoff = datetime.now(timezone.utc) - timedelta(days=DAYS_BACK)
     items = []
-    for name, url in FEEDS:
+    for name, url, edu_only in FEEDS:
         try:
             feed = feedparser.parse(url)
             if feed.bozo and not feed.entries:
@@ -82,12 +96,15 @@ def fetch_entries():
                     break
             if published and published < cutoff:
                 continue
+            title = (getattr(entry, "title", "无标题") or "").strip()
             summary = getattr(entry, "summary", "") or ""
             summary = re.sub(r"<[^>]+>", "", summary)  # 去 HTML 标签
             summary = re.sub(r"\s+", " ", summary).strip()
+            if edu_only and not is_edu_related(title, summary):
+                continue
             items.append({
                 "source": name,
-                "title": (getattr(entry, "title", "无标题") or "").strip(),
+                "title": title,
                 "link": (getattr(entry, "link", "") or "").strip(),
                 "published": published.isoformat() if published else "",
                 "summary": summary[:600],
@@ -143,11 +160,11 @@ def build_markdown(today, items, article):
     """拼装带 front matter 的完整 Markdown。"""
     lines = [
         "---",
-        f'title: "AI 前沿速览（{today}）"',
+        f'title: "AI+教育前沿速览（{today}）"',
         f"date: {today}",
         "draft: true",
         'categories: ["前沿观察"]',
-        'tags: ["AI 新闻", "自动摘要", "LLM"]',
+        'tags: ["AI+教育", "教育科技", "自动摘要"]',
         "# 本期抓取来源",
         "sources:",
     ]
