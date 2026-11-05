@@ -3,7 +3,7 @@ title: "从学 AI 工具开始：TDLAI 为什么出发"
 date: 2026-11-04T00:00:00+08:00
 author: "TDLAI"
 description: "介绍 TDLAI 的出发点：从学习 AI 工具开始，记录实践、判断与教育探索。"
-categories: ["frontier", "education"]
+categories: ["AI+教育"]
 tags: ["创站文章", "AI 工具", "AI 教育"]
 cover:
   image: "/images/tdlai-mascot.jpg"
@@ -16,6 +16,8 @@ ShowToc: true
 你好，欢迎来到 TDLAI。
 
 这篇文章，是这个小小空间的起点。
+
+<!--more-->
 
 我们常常看到 AI 又发布了新模型、新功能、新工具。信息像潮水一样涌来，让人很容易觉得：是不是每一样都要马上学会？但比起追赶所有变化，我更想从一个简单的问题开始：**这个工具能不能帮我把一件真实的事情做好一点？**
 

@@ -33,7 +33,7 @@ params:
   ShowShareButtons: false
   ShowRssButtonInSectionTermList: true
   cardMode:
-    enabled: true
+    enabled: false
     title: "TDLAI"
     subtitle: "从 AI 工具实测和使用攻略出发，探索 AI 如何帮助学习与教学。持续记录实践、判断与教育场景中的真实问题。<br>合作/交流请在小红书、微信公众号、Bilibili 搜索：<strong>桃大龙的生活实验室</strong>；视频号搜索：<strong>TDLAI</strong>。"
     imageUrl: "images/tdlai-mascot.jpg"
@@ -78,15 +78,15 @@ menu:
   main:
     - identifier: tools
       name: "工具与攻略"
-      pageRef: /categories/tools
+      url: /categories/工具与攻略/
       weight: 10
     - identifier: education
       name: "AI+教育"
-      pageRef: /categories/education
+      url: /categories/AI+教育/
       weight: 20
     - identifier: frontier
       name: "前沿观察"
-      pageRef: /categories/frontier
+      url: /categories/前沿观察/
       weight: 30
     - identifier: search
       name: "搜索"
