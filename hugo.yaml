@@ -5,6 +5,7 @@ relativeURLs: true
 enableRobotsTXT: true
 enableGitInfo: true
 defaultContentLanguage: zh-cn
+mainSections: ["posts", "tools", "education"]
 
 module:
   imports:
@@ -33,7 +34,7 @@ params:
   ShowShareButtons: false
   ShowRssButtonInSectionTermList: true
   cardMode:
-    enabled: false
+    enabled: true
     title: "TDLAI"
     subtitle: "从 AI 工具实测和使用攻略出发，探索 AI 如何帮助学习与教学。持续记录实践、判断与教育场景中的真实问题。<br>合作/交流请在小红书、微信公众号、Bilibili 搜索：<strong>桃大龙的生活实验室</strong>；视频号搜索：<strong>TDLAI</strong>。"
     imageUrl: "images/tdlai-mascot.jpg"
@@ -42,7 +43,7 @@ params:
     imageHeight: 180
     buttons:
       - name: "探索 AI 学习之旅"
-        url: "/posts/"
+        url: "#home-posts"
   socialIcons:
     - name: "bilibili"
       title: "Bilibili：桃大龙的生活实验室"
