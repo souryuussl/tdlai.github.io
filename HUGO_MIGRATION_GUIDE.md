@@ -12,7 +12,7 @@
 - 自定义样式：`assets/css/extended/custom.css`
 - 图片素材：`static/images/`
 - GitHub Actions：`.github/workflows/hugo.yaml`
-- 原始 HTML：保留在仓库根目录，便于对照迁移；Hugo 发布时以 `content/` 下的 Markdown 为准。
+- 原始 HTML：已归档至 `legacy/`（2026-11-07），不再参与构建；Hugo 发布以 `content/` 下的 Markdown 为准。
 
 文章正文从 `first-post.html` 改写为 Markdown：保留标题、段落、引用、列表、公众号二维码和 Bilibili 链接；封面和二维码从旧页面抽取到 `static/images/`。首页通过极简主题的 `cardMode` 呈现吉祥物、简介、公众号和 Bilibili 入口。
 
@@ -28,7 +28,9 @@
 
 ## 本机预览
 
-当前运行环境没有安装 Hugo 或 Go，因此不能在这里执行本地 Hugo 构建。管理员在 macOS 上安装 Homebrew 后，可执行：
+> 更新（2026-11-07）：本机已安装 Hugo 0.166.0 extended 与 Go 1.27.0，位置见 `PROJECT_HANDOFF.md` 第 5 节；以下 macOS/Homebrew 步骤为历史记录。
+
+管理员在 macOS 上安装 Homebrew 后，可执行：
 
 ```sh
 brew install hugo go
