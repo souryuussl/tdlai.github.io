@@ -68,6 +68,7 @@
 | Hugo 0.166.0 extended | `D:\workspace\huanjing\hugo` |
 | Go 1.27.0 | `D:\workspace\huanjing\go` |
 | gh CLI 2.103.3 | `D:\workspace\huanjing\gh` |
+| 建设预览工作区 | `D:\workspace\04-blogjianshe`（先预览，确认后再落到本目录） |
 
 本地预览（PowerShell）：
 
