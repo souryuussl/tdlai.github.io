@@ -33,7 +33,7 @@
 | 主题 | `github.com/hcllmsx/hugo-jijian`（Hugo Modules） |
 | 搜索 | Pagefind（构建时生成索引） |
 | 部署 | GitHub Actions + GitHub Pages |
-| 自动草稿 | `scripts/fetch_ai_news.py` + `fetch-ai-news.yml`（每两天一次） |
+| 自动草稿 | `scripts/fetch_ai_news.py` + `fetch-ai-news.yml`（每周两次：周一、周四 09:00） |
 
 ## 4. 当前目录结构
 
@@ -88,6 +88,7 @@ hugo server -D --baseURL http://127.0.0.1:1313/
 - 文章目录：`content/posts/`，文件名 `YYYY-MM-DD-英文缩写.md`。
 - Front Matter 必填：`title`、`date`、`categories`、`tags`。
 - `categories` 只能是：`工具与攻略`、`AI+教育`、`前沿观察`。
+- **前沿观察更新节奏：** 每周一、周四各一期。定时任务当天上午生成草稿，人工核对后发布。
 - 图片放在 `static/images/`，Markdown 中使用 `/images/xxx.jpg`。
 - 所有文章底部的社交引导块由 `layouts/partials/article-guide.html` + `layouts/_default/single.html` 自动渲染，**不要在正文手动添加 `{{< social-guide >}}`**。
 - 详细写作结构见 [PROJECT_GUIDE.md](PROJECT_GUIDE.md)。

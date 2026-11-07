@@ -38,7 +38,7 @@ EDU_KEYWORDS = [
     "higher ed", "academic", "study mode",
 ]
 
-DAYS_BACK = 3        # 只取最近 3 天的条目
+DAYS_BACK = 5        # 只取最近 5 天的条目（覆盖每周两次抓取之间的间隔）
 MAX_PER_FEED = 5     # 每个源最多取 5 条
 MAX_TOTAL = 12       # 送入 LLM 的条目总数上限（控制 token）
 
