@@ -7,8 +7,8 @@
 {{- if .IsHome }}
 <nav class="home-categories" aria-label="内容分类">
   {{- range site.Menus.main }}
-  {{- if hasPrefix .URL "/categories" }}
-  <a class="home-category" href="{{ .URL | relURL }}">{{ .Name }}</a>
+  {{- if in (slice "tools" "education" "frontier") .Identifier }}
+  <a class="home-category" href="{{ .URL }}">{{ .Name }}</a>
   {{- end }}
   {{- end }}
 </nav>
@@ -123,7 +123,7 @@
     {{- if $pbImg -}}
       {{- $coverUrl = $pbImg.RelPermalink -}}
     {{- else -}}
-      {{- $coverUrl = $coverImgName | relURL -}}
+      {{- $coverUrl = $coverImgName | strings.TrimPrefix "/" | absURL -}}
     {{- end -}}
   {{- end -}}
 
