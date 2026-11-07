@@ -20,6 +20,9 @@ outputs:
 
 params:
   env: production
+  disableSpecial1stPost: true
+  DateFormat: "2006年1月2日"
+  ShowLastMod: false
   description: "AI 工具学习、实用攻略与 AI 教育实践。"
   author: "TDLAI"
   defaultTheme: auto

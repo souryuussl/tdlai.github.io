@@ -75,10 +75,12 @@
 $env:Path = "D:\workspace\huanjing\hugo;D:\workspace\huanjing\go\bin;" + $env:Path
 $env:HUGO_MODULE_PROXY = "https://goproxy.cn"
 cd D:\workspace\03-blog
-hugo server -D
+hugo server -D --baseURL http://127.0.0.1:1313/
 ```
 
 浏览器访问 <http://localhost:1313/>。
+
+> 生产环境的 `baseURL` 包含 `/tdlai.github.io/` 子路径。本地预览必须用 `--baseURL` 覆盖为根路径，否则 CSS 会指向 `/tdlai.github.io/assets/...` 而 404。
 
 ## 6. 内容规范
 

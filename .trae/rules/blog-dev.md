@@ -5,7 +5,7 @@
 ## 1. 环境与目录
 
 - 日常开发必须在本目录（`D:\workspace\03-blog`）下进行。
-- 本地预览：`hugo server -D`，访问 http://localhost:1313/ 。
+- 本地预览：`hugo server -D --baseURL http://127.0.0.1:1313/`，访问 http://localhost:1313/ 。本地必须覆盖 baseURL，否则 CSS 会因 `/tdlai.github.io/` 子路径而 404。
 - Hugo 与 Go 安装在 `D:\workspace\huanjing`，主题模块通过 `HUGO_MODULE_PROXY=https://goproxy.cn` 拉取。
 
 ## 2. 新增文章规范
