@@ -1,7 +1,7 @@
 baseURL: "https://souryuussl.github.io/tdlai.github.io/"
 locale: zh-CN
 title: TDLAI
-relativeURLs: true
+relativeURLs: false
 enableRobotsTXT: true
 enableGitInfo: true
 defaultContentLanguage: zh-cn
