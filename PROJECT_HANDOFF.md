@@ -45,10 +45,8 @@
 ├── .trae/rules/blog-dev.md    # 开发准则（Windows 路径已更新）
 ├── archetypes/posts.md        # 新文章模板
 ├── content/
-│   ├── posts/                 # 正式文章
+│   ├── posts/                 # 正式文章（所有栏目统一放这里）
 │   ├── drafts/                # 自动生成的草稿
-│   ├── education/             # AI+教育栏目
-│   ├── tools/                 # 工具与攻略栏目
 │   └── categories/            # 分类索引
 ├── layouts/                   # 自定义布局与 shortcode
 ├── assets/css/extended/custom.css
@@ -85,7 +83,7 @@ hugo server -D --baseURL http://127.0.0.1:1313/
 
 ## 6. 内容规范
 
-- 文章目录：`content/posts/`，文件名 `YYYY-MM-DD-英文缩写.md`。
+- 文章目录：所有栏目统一放在 `content/posts/`，文件名 `YYYY-MM-DD-英文缩写.md`，用 `categories` 区分栏目。
 - Front Matter 必填：`title`、`date`、`categories`、`tags`。
 - `categories` 只能是：`工具与攻略`、`AI+教育`、`前沿观察`。
 - **前沿观察更新节奏：** 每周一、周四各一期。定时任务当天上午生成草稿，人工核对后发布。

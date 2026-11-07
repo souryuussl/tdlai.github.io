@@ -5,7 +5,7 @@ relativeURLs: false
 enableRobotsTXT: true
 enableGitInfo: true
 defaultContentLanguage: zh-cn
-mainSections: ["posts", "tools", "education"]
+mainSections: ["posts"]
 
 module:
   imports:
