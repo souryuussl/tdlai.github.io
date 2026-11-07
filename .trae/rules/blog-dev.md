@@ -40,3 +40,9 @@ tags: ["标签1", "标签2"]
 - 完成修改后，用**中文**写一句清晰的 commit message。
 - 然后自动执行：`git add .` → `git commit` → `git push`（推送到 `main` 分支）。
 - 推送后 GitHub Actions 会自动构建并部署到线上。
+
+## 6. 文章底部
+
+- 所有文章的底部社交引导块由 `layouts/partials/article-guide.html` 和 `layouts/_default/single.html` 自动渲染。
+- 禁止在正文手动添加 `{{< social-guide >}}`，避免重复。
+- 新增文章无需处理底部，模板会自动生效。

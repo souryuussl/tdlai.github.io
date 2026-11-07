@@ -89,6 +89,7 @@ hugo server -D --baseURL http://127.0.0.1:1313/
 - Front Matter 必填：`title`、`date`、`categories`、`tags`。
 - `categories` 只能是：`工具与攻略`、`AI+教育`、`前沿观察`。
 - 图片放在 `static/images/`，Markdown 中使用 `/images/xxx.jpg`。
+- 所有文章底部的社交引导块由 `layouts/partials/article-guide.html` + `layouts/_default/single.html` 自动渲染，**不要在正文手动添加 `{{< social-guide >}}`**。
 - 详细写作结构见 [PROJECT_GUIDE.md](PROJECT_GUIDE.md)。
 
 ## 7. 发布流程

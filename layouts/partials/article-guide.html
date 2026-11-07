@@ -1,0 +1,46 @@
+{{- /* 文章底部统一社交引导块：所有正文页面自动渲染 */ -}}
+<div class="article-guide" data-pagefind-ignore>
+  <p class="article-guide-text">
+    合作/交流请在小红书、微信公众号、Bilibili 搜索：<strong>桃大龙的生活实验室</strong>；视频号搜索：<strong>TDLAI</strong>。
+  </p>
+  <div class="social-icons" align="center">
+    {{- range site.Params.socialIcons }}
+    {{- $u := trim .url " " -}}
+    {{- $uAbs := false -}}
+    {{- if $u }}{{ $uAbs = (urls.Parse $u).IsAbs }}{{ end -}}
+    {{- $href := $u -}}
+    {{- if and $u (not $uAbs) }}{{ $href = $u | strings.TrimPrefix "/" | absURL }}{{ end -}}
+    {{- $hi := trim .hoverImage " " -}}
+    {{- $hiAbs := false -}}
+    {{- if $hi }}{{ $hiAbs = (urls.Parse $hi).IsAbs }}{{ end -}}
+    {{- $imgSrc := $hi -}}
+    {{- if and $hi (not $hiAbs) }}{{ $imgSrc = $hi | strings.TrimPrefix "/" | absURL }}{{ end -}}
+    {{- $title := (.title | default .name) | title -}}
+    <div class="social-icon-container"
+        {{- if $href }} data-url="{{ $href }}"{{ end }}
+        {{- if $imgSrc }} data-hover-image="{{ $imgSrc }}"{{ end }}
+        data-title="{{ $title }}">
+      {{- if $href }}
+      <a href="{{ $href | safeURL }}" target="_blank" rel="noopener noreferrer me" title="{{ $title }}">
+        {{ partial "svg.html" . }}
+      </a>
+      {{- else }}
+      <span class="social-icon-no-link" title="{{ $title }}">
+        {{ partial "svg.html" . }}
+      </span>
+      {{- end }}
+      {{- if $imgSrc }}
+      <div class="social-icon-hover-image">
+        <img src="{{ $imgSrc | safeURL }}" alt="{{ $title }} hover image" />
+      </div>
+      {{- end }}
+    </div>
+    {{- end }}
+    <!-- 移动端固定的悬停图片容器 -->
+    <div class="mobile-hover-image-container" id="mobile-hover-image-container">
+        <img src="" alt="" />
+    </div>
+    <!-- 移动端提示文字（独立于图片容器） -->
+    <div class="mobile-hover-tip" id="mobile-hover-tip">再点一次前往</div>
+  </div>
+</div>
