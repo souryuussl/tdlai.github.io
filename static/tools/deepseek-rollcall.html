@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>课堂随机点名器 · TDLAI</title>
+<meta name="description" content="一个单文件、可离线使用的课堂随机点名器。">
+<style>
+  :root{
+    --bg:#fdf8f9;
+    --card:#ffffff;
+    --ink:#332a2e;
+    --ink-soft:#5b4c53;
+    --muted:#8d7c82;
+    --line:#f1dfe5;
+    --pink:#e07f9c;
+    --pink-deep:#b2506f;
+    --pink-soft:#fde8ee;
+    --pink-wash:#fff4f7;
+    --blue:#8fc9de;
+    --blue-soft:#eaf6fb;
+    --gold:#dfb25c;
+    --shadow:0 20px 50px rgba(168,110,130,.13);
+    --shadow-sm:0 8px 20px rgba(168,110,130,.09);
+    --radius:24px;
+    --sans:"PingFang SC","Microsoft YaHei","Noto Sans SC","Hiragino Sans GB",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:var(--sans);
+    color:var(--ink);
+    background:
+      radial-gradient(900px 520px at 6% -10%, #ffe3ec 0%, rgba(255,227,236,0) 60%),
+      radial-gradient(820px 520px at 100% 0%, #e8f6fb 0%, rgba(232,246,251,0) 58%),
+      var(--bg);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit}
+  .app{
+    width:min(1320px, calc(100% - 40px));
+    margin:0 auto;
+    padding:22px 0 34px;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;padding:2px 6px 20px;
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .logo{
+    width:42px;height:42px;border-radius:14px;display:grid;place-items:center;
+    background:linear-gradient(140deg,#efa2b8,#e07f9c);
+    color:#fff;font-size:20px;box-shadow:0 8px 18px rgba(224,127,156,.35);
+  }
+  .brand b{display:block;font-size:17px;letter-spacing:.03em}
+  .brand small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;letter-spacing:.08em}
+  .top-actions{display:flex;gap:10px}
+  .ghost-btn{
+    border:1px solid var(--line);background:rgba(255,255,255,.72);color:var(--ink-soft);
+    border-radius:12px;padding:9px 14px;font-size:13px;cursor:pointer;transition:.18s;
+  }
+  .ghost-btn:hover{border-color:#e6c7d4;color:var(--pink-deep);transform:translateY(-1px)}
+  .layout{
+    flex:1;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,.78fr);
+    gap:22px;align-items:stretch;
+  }
+  /* ---- 舞台 ---- */
+  .stage{
+    position:relative;overflow:hidden;
+    background:linear-gradient(165deg,#fff 0%,#fff8fa 58%,#f4fbfe 100%);
+    border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:52px 34px 42px;min-height:560px;text-align:center;
+  }
+  .stage::before{
+    content:"";position:absolute;width:420px;height:420px;border-radius:50%;
+    background:radial-gradient(circle,rgba(253,232,238,.85),rgba(253,232,238,0) 68%);
+    top:-150px;left:-120px;pointer-events:none;
+  }
+  .stage::after{
+    content:"";position:absolute;width:360px;height:360px;border-radius:50%;
+    background:radial-gradient(circle,rgba(234,246,251,.95),rgba(234,246,251,0) 70%);
+    bottom:-140px;right:-100px;pointer-events:none;
+  }
+  .stage > *{position:relative;z-index:1}
+  .status-pill{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12.5px;letter-spacing:.12em;color:var(--pink-deep);
+    background:var(--pink-soft);border:1px solid #f8d5e0;
+    padding:7px 15px;border-radius:999px;margin-bottom:30px;
+  }
+  .status-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--pink);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+  .name-display{
+    font-size:clamp(56px, 10.5vw, 148px);
+    line-height:1.08;font-weight:800;letter-spacing:.02em;
+    margin:0 0 12px;min-height:1.2em;
+    color:#3a2c33;
+    transition:color .2s;
+    word-break:break-word;
+    max-width:100%;
+  }
+  .name-display.idle{font-size:clamp(30px,4.5vw,54px);font-weight:700;color:#a9969e;letter-spacing:.04em}
+  .name-display.rolling{color:var(--pink-deep);filter:blur(.4px);opacity:.92}
+  .name-display.picked{
+    color:var(--pink-deep);
+    text-shadow:0 10px 34px rgba(224,127,156,.28);
+    animation:pop .48s cubic-bezier(.2,1.6,.4,1);
+  }
+  @keyframes pop{0%{transform:scale(.72);opacity:.4}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+  .subline{font-size:14px;color:var(--muted);margin:0 0 34px;min-height:1.6em}
+  .main-btn{
+    appearance:none;border:none;cursor:pointer;
+    padding:19px 62px;border-radius:999px;
+    background:linear-gradient(135deg,#efa2b8,#e07f9c 55%,#d76f8e);
+    color:#fff;font-size:20px;font-weight:700;letter-spacing:.14em;
+    box-shadow:0 16px 34px rgba(224,127,156,.36), inset 0 1px 0 rgba(255,255,255,.35);
+    transition:transform .16s, box-shadow .16s, filter .16s;
+  }
+  .main-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 20px 40px rgba(224,127,156,.42)}
+  .main-btn:active:not(:disabled){transform:translateY(0) scale(.99)}
+  .main-btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+  .main-btn.stop{background:linear-gradient(135deg,#8fc9de,#6fb3cc 60%,#5fa4bf);box-shadow:0 16px 34px rgba(111,179,204,.34)}
+  .shortcut{margin:18px 0 0;font-size:12.5px;color:#a9969e}
+  kbd{
+    display:inline-block;padding:2px 7px;margin:0 3px;border-radius:6px;
+    border:1px solid #ecd9e1;border-bottom-width:2px;background:#fff;
+    font-family:inherit;font-size:11.5px;color:#7d6a72;
+  }
+  /* ---- 右侧面板 ---- */
+  .panel{
+    background:rgba(255,255,255,.86);
+    border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow-sm);
+    padding:24px 22px;
+    display:flex;flex-direction:column;gap:16px;
+    backdrop-filter:blur(6px);
+  }
+  .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .panel-head h2{margin:0;font-size:15px;letter-spacing:.04em}
+  .panel-head span{font-size:11.5px;color:var(--muted)}
+  .field-label{display:block;font-size:12.5px;color:var(--ink-soft);margin:0 0 7px;letter-spacing:.05em}
+  textarea{
+    width:100%;min-height:168px;resize:vertical;
+    border:1px solid var(--line);border-radius:14px;
+    background:var(--pink-wash);padding:12px 14px;
+    font-family:inherit;font-size:14px;line-height:1.75;color:var(--ink);
+    outline:none;transition:.18s;
+  }
+  textarea:focus{border-color:#efb9ca;background:#fff;box-shadow:0 0 0 4px rgba(253,232,238,.9)}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .mini-btn{
+    flex:1;min-width:76px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);border-radius:11px;padding:9px 8px;
+    font-size:12.5px;cursor:pointer;transition:.18s;white-space:nowrap;
+  }
+  .mini-btn:hover{border-color:#e6c7d4;color:var(--pink-deep);background:var(--pink-wash)}
+  .options{display:flex;flex-direction:column;gap:9px;padding:13px 14px;border-radius:13px;background:#fbf6f8}
+  .switch{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:var(--ink-soft);cursor:pointer}
+  .switch input{position:absolute;opacity:0;pointer-events:none}
+  .track{
+    width:40px;height:23px;border-radius:999px;background:#eadce2;position:relative;
+    transition:.2s;flex:none;
+  }
+  .track::after{
+    content:"";position:absolute;width:17px;height:17px;border-radius:50%;background:#fff;
+    top:3px;left:3px;box-shadow:0 2px 5px rgba(80,50,60,.18);transition:.2s;
+  }
+  .switch input:checked + .track{background:var(--pink)}
+  .switch input:checked + .track::after{left:20px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .stat{
+    background:linear-gradient(160deg,#fff,#fff7fa);border:1px solid var(--line);
+    border-radius:13px;padding:11px 13px;
+  }
+  .stat b{display:block;font-size:22px;line-height:1.2;color:var(--pink-deep)}
+  .stat span{font-size:11.5px;color:var(--muted)}
+  .history-box{border-top:1px dashed var(--line);padding-top:14px;min-height:90px}
+  .history-box h3{margin:0 0 9px;font-size:12.5px;color:var(--muted);font-weight:500;letter-spacing:.06em}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;max-height:120px;overflow:auto}
+  .chip{
+    border:1px solid #f0d7df;background:#fff;color:var(--pink-deep);
+    padding:5px 10px;border-radius:999px;font-size:12px;cursor:pointer;transition:.15s;
+  }
+  .chip:hover{background:var(--pink-soft);border-color:#f3c3d2}
+  .chips .empty{font-size:12px;color:#b7a7ad;line-height:1.7}
+  .reset-btn{
+    border:1px dashed #e6c7d4;background:transparent;color:var(--pink-deep);
+    padding:10px;border-radius:11px;font-size:12.5px;cursor:pointer;transition:.18s;
+  }
+  .reset-btn:hover{background:var(--pink-wash);border-style:solid}
+  /* ---- 提示与彩纸 ---- */
+  .toast{
+    position:fixed;left:50%;bottom:34px;transform:translate(-50%,18px);
+    background:#3a2c33;color:#fff;font-size:13px;line-height:1.6;
+    padding:11px 18px;border-radius:12px;box-shadow:0 12px 30px rgba(50,30,40,.25);
+    opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:min(90vw,460px);text-align:center;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40}
+  /* ---- 响应式 ---- */
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr}
+    .stage{min-height:420px;padding:42px 22px 36px}
+    .panel{order:2}
+    .app{padding-bottom:24px}
+  }
+  @media (max-width:560px){
+    .app{width:calc(100% - 24px);padding-top:14px}
+    .topbar{padding-bottom:14px}
+    .brand .logo{width:36px;height:36px;border-radius:12px;font-size:17px}
+    .brand b{font-size:15px}
+    .stage{border-radius:20px;min-height:360px;padding:34px 18px 30px}
+    .status-pill{margin-bottom:20px}
+    .name-display{font-size:clamp(46px,15vw,76px)}
+    .name-display.idle{font-size:clamp(24px,6.5vw,34px)}
+    .main-btn{padding:16px 46px;font-size:17px}
+    .panel{padding:19px 16px;border-radius:20px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">点</div>
+      <div>
+        <b>课堂随机点名器</b>
+        <small>TDLAI · 单文件离线工具</small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="ghost-btn" id="fullscreenBtn" type="button">全屏</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="stage" aria-label="点名舞台">
+      <div class="status-pill"><span class="dot"></span><span id="statusText">等待开始</span></div>
+      <div class="name-display idle" id="nameDisplay" aria-live="polite">准备好了吗？</div>
+      <p class="subline" id="subline">粘贴名单后，点击下方按钮开始</p>
+      <button class="main-btn" id="mainBtn" type="button">开始点名</button>
+      <p class="shortcut">按 <kbd>空格</kbd> 开始 / 停止，也可以点击按钮</p>
+    </section>
+
+    <aside class="panel" aria-label="设置与记录">
+      <div class="panel-head">
+        <h2>名单与设置</h2>
+        <span id="modeHint">不重复模式</span>
+      </div>
+
+      <div>
+        <label class="field-label" for="rosterInput">学生名单 · 每行一个姓名</label>
+        <textarea id="rosterInput" spellcheck="false" placeholder="张小明&#10;李小红&#10;王小雨"></textarea>
+      </div>
+
+      <div class="row">
+        <button class="mini-btn" id="importBtn" type="button">导入 txt</button>
+        <button class="mini-btn" id="sampleBtn" type="button">示例名单</button>
+        <button class="mini-btn" id="clearBtn" type="button">清空</button>
+      </div>
+      <input id="fileInput" type="file" accept=".txt,.csv,text/plain" hidden>
+
+      <div class="options">
+        <label class="switch">
+          <span>不重复点名</span>
+          <input type="checkbox" id="noRepeat" checked>
+          <i class="track"></i>
+        </label>
+        <label class="switch">
+          <span>点名音效</span>
+          <input type="checkbox" id="soundOn" checked>
+          <i class="track"></i>
+        </label>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b id="totalCount">0</b><span>名单人数</span></div>
+        <div class="stat"><b id="remainCount">0</b><span>剩余可点</span></div>
+      </div>
+
+      <div class="history-box">
+        <h3>已点到 · 点击姓名可撤销</h3>
+        <div class="chips" id="historyChips"><span class="empty">还没有点到任何同学</span></div>
+      </div>
+
+      <button class="reset-btn" id="resetBtn" type="button">重置点名记录</button>
+    </aside>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+(function () {
+  'use strict';
+
+  var SAMPLE_NAMES = [
+    '张小明', '李小红', '王小雨', '陈子航', '刘思远', '赵一诺',
+    '周锦程', '吴嘉怡', '徐若溪', '孙浩然', '马诗涵', '朱明轩',
+    '胡可欣', '郭振宇', '何雨桐', '高梓萱', '林俊熙', '罗欣妍',
+    '郑博文', '梁语嫣', '谢承泽', '唐依晨', '许星河', '邓安然'
+  ];
+
+  var STORAGE_KEY = 'tdlai_rollcall_roster_v1';
+
+  var nameEl = document.getElementById('nameDisplay');
+  var sublineEl = document.getElementById('subline');
+  var statusEl = document.getElementById('statusText');
+  var mainBtn = document.getElementById('mainBtn');
+  var textarea = document.getElementById('rosterInput');
+  var importBtn = document.getElementById('importBtn');
+  var sampleBtn = document.getElementById('sampleBtn');
+  var clearBtn = document.getElementById('clearBtn');
+  var fileInput = document.getElementById('fileInput');
+  var noRepeatEl = document.getElementById('noRepeat');
+  var soundOnEl = document.getElementById('soundOn');
+  var totalEl = document.getElementById('totalCount');
+  var remainEl = document.getElementById('remainCount');
+  var historyEl = document.getElementById('historyChips');
+  var resetBtn = document.getElementById('resetBtn');
+  var modeHint = document.getElementById('modeHint');
+  var fullscreenBtn = document.getElementById('fullscreenBtn');
+  var toastEl = document.getElementById('toast');
+
+  var roster = [];
+  var called = [];
+  var rolling = false;
+  var rollTimer = null;
+  var lastPool = [];
+  var audioCtx = null;
+
+  function parseRoster(text) {
+    var seen = {};
+    return text.split(/\r?\n/).map(function (line) {
+      return line.replace(/^\s+|\s+$/g, '');
+    }).filter(function (name) {
+      if (!name) return false;
+      if (seen[name]) return false;
+      seen[name] = true;
+      return true;
+    });
+  }
+
+  function saveRoster() {
+    try { localStorage.setItem(STORAGE_KEY, textarea.value); } catch (e) {}
+  }
+
+  function loadRoster() {
+    var saved = '';
+    try { saved = localStorage.getItem(STORAGE_KEY) || ''; } catch (e) {}
+    textarea.value = saved || SAMPLE_NAMES.join('\n');
+    syncRoster();
+  }
+
+  function syncRoster() {
+    roster = parseRoster(textarea.value);
+    var valid = {};
+    roster.forEach(function (n) { valid[n] = true; });
+    called = called.filter(function (n) { return valid[n]; });
+    totalEl.textContent = roster.length;
+    renderStats();
+    renderHistory();
+    updateButtonState();
+    saveRoster();
+  }
+
+  function availablePool() {
+    if (!noRepeatEl.checked) return roster.slice();
+    var calledMap = {};
+    called.forEach(function (n) { calledMap[n] = true; });
+    return roster.filter(function (n) { return !calledMap[n]; });
+  }
+
+  function renderStats() {
+    var pool = availablePool();
+    remainEl.textContent = noRepeatEl.checked ? pool.length : roster.length;
+    modeHint.textContent = noRepeatEl.checked ? '不重复模式' : '可重复模式';
+  }
+
+  function renderHistory() {
+    historyEl.innerHTML = '';
+    if (!called.length) {
+      var empty = document.createElement('span');
+      empty.className = 'empty';
+      empty.textContent = '还没有点到任何同学';
+      historyEl.appendChild(empty);
+      return;
+    }
+    called.forEach(function (name, index) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip';
+      chip.textContent = name;
+      chip.title = '点击撤销这一次点名';
+      chip.addEventListener('click', function () {
+        if (rolling) return;
+        called.splice(index, 1);
+        renderStats();
+        renderHistory();
+        updateButtonState();
+      });
+      historyEl.appendChild(chip);
+    });
+  }
+
+  function updateButtonState() {
+    var hasNames = roster.length > 0;
+    if (rolling) {
+      mainBtn.disabled = false;
+      mainBtn.classList.add('stop');
+      mainBtn.textContent = '停！';
+      return;
+    }
+    mainBtn.classList.remove('stop');
+    mainBtn.textContent = '开始点名';
+    if (!hasNames) {
+      mainBtn.disabled = true;
+      nameEl.textContent = '先添加名单';
+      nameEl.className = 'name-display idle';
+      sublineEl.textContent = '在右侧粘贴或导入学生名单';
+      statusEl.textContent = '名单为空';
+      return;
+    }
+    if (noRepeatEl.checked && availablePool().length === 0) {
+      mainBtn.disabled = true;
+      nameEl.textContent = '全班都点过啦';
+      nameEl.className = 'name-display idle';
+      sublineEl.textContent = '点击右侧「重置点名记录」开始新一轮';
+      statusEl.textContent = '本轮已点完';
+      return;
+    }
+    mainBtn.disabled = false;
+    if (!rolling && !nameEl.classList.contains('picked')) {
+      nameEl.textContent = '准备好了吗？';
+      nameEl.className = 'name-display idle';
+      sublineEl.textContent = '点击按钮或按空格，随机抽取一位同学';
+      statusEl.textContent = '等待开始';
+    }
+  }
+
+  function randomOf(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function startRoll() {
+    var pool = availablePool();
+    if (!roster.length) { toast('请先在右侧添加名单'); return; }
+    if (!pool.length) { toast('本轮已经点完了，先重置记录'); return; }
+    rolling = true;
+    lastPool = pool;
+    nameEl.classList.remove('idle', 'picked');
+    nameEl.classList.add('rolling');
+    statusEl.textContent = '正在抽取';
+    sublineEl.textContent = '名字滚动中，再按一次空格停止';
+    updateButtonState();
+    rollTimer = setInterval(function () {
+      nameEl.textContent = randomOf(pool);
+    }, 65);
+  }
+
+  function stopRoll() {
+    if (!rolling) return;
+    clearInterval(rollTimer);
+    rollTimer = null;
+    rolling = false;
+
+    var pool = availablePool().length ? availablePool() : lastPool;
+    var name = randomOf(pool);
+    nameEl.classList.remove('rolling');
+    nameEl.classList.add('picked');
+    nameEl.textContent = name;
+    statusEl.textContent = '点名结果';
+    sublineEl.textContent = '请 ' + name + ' 同学回答';
+
+    if (noRepeatEl.checked) {
+      called.push(name);
+      renderStats();
+      renderHistory();
+    }
+    updateButtonState();
+    burstConfetti();
+    playChime();
+    if (noRepeatEl.checked && availablePool().length === 0) {
+      statusEl.textContent = '本轮结束';
+      sublineEl.textContent = '全班都点过啦，点击右侧「重置点名记录」开始新一轮';
+      mainBtn.disabled = true;
+      mainBtn.textContent = '本轮已点完';
+    }
+  }
+
+  function toggleRoll() {
+    if (rolling) stopRoll(); else startRoll();
+  }
+
+  function toast(message) {
+    toastEl.textContent = message;
+    toastEl.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(function () {
+      toastEl.classList.remove('show');
+    }, 2200);
+  }
+
+  function playChime() {
+    if (!soundOnEl.checked) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      var now = audioCtx.currentTime;
+      [660, 880].forEach(function (freq, i) {
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, now + i * 0.11);
+        gain.gain.exponentialRampToValueAtTime(0.16, now + i * 0.11 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.11 + 0.28);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + i * 0.11);
+        osc.stop(now + i * 0.11 + 0.3);
+      });
+    } catch (e) {}
+  }
+
+  /* ---- 彩纸动画 ---- */
+  var canvas = document.getElementById('confetti');
+  var ctx = canvas.getContext('2d');
+  var particles = [];
+  var confettiRunning = false;
+  var dpr = window.devicePixelRatio || 1;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  function burstConfetti() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var colors = ['#e07f9c', '#f4a7bd', '#8fc9de', '#dfb25c', '#9fd8b4', '#c9a7e8'];
+    var cx = window.innerWidth / 2;
+    var cy = window.innerHeight * 0.42;
+    for (var i = 0; i < 90; i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var speed = 3 + Math.random() * 7;
+      particles.push({
+        x: cx + (Math.random() - 0.5) * 120,
+        y: cy + (Math.random() - 0.5) * 60,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 3,
+        size: 4 + Math.random() * 7,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.28,
+        life: 1
+      });
+    }
+    if (!confettiRunning) {
+      confettiRunning = true;
+      requestAnimationFrame(confettiTick);
+    }
+  }
+
+  function confettiTick() {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    var alive = 0;
+    particles.forEach(function (p) {
+      if (p.life <= 0) return;
+      p.vy += 0.16;
+      p.vx *= 0.992;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.life -= 0.008;
+      if (p.life <= 0) return;
+      alive++;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.62);
+      ctx.restore();
+    });
+    particles = particles.filter(function (p) { return p.life > 0; });
+    if (alive > 0) {
+      requestAnimationFrame(confettiTick);
+    } else {
+      confettiRunning = false;
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    }
+  }
+
+  /* ---- 事件绑定 ---- */
+  mainBtn.addEventListener('click', toggleRoll);
+
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName) || '';
+    if (tag === 'TEXTAREA' || tag === 'INPUT') return;
+    if (e.code === 'Space' || e.key === ' ') {
+      e.preventDefault();
+      toggleRoll();
+    }
+  });
+
+  textarea.addEventListener('input', function () {
+    syncRoster();
+    if (!rolling && !nameEl.classList.contains('picked')) updateButtonState();
+  });
+
+  noRepeatEl.addEventListener('change', function () {
+    renderStats();
+    updateButtonState();
+    if (noRepeatEl.checked) called = [];
+    renderHistory();
+  });
+
+  importBtn.addEventListener('click', function () { fileInput.click(); });
+
+  fileInput.addEventListener('change', function () {
+    var file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      textarea.value = String(e.target.result || '').replace(/,/g, '\n');
+      syncRoster();
+      toast('已导入 ' + roster.length + ' 位同学');
+      fileInput.value = '';
+    };
+    reader.readAsText(file, 'UTF-8');
+  });
+
+  sampleBtn.addEventListener('click', function () {
+    textarea.value = SAMPLE_NAMES.join('\n');
+    called = [];
+    syncRoster();
+    updateButtonState();
+    toast('已填入 24 人示例名单');
+  });
+
+  clearBtn.addEventListener('click', function () {
+    textarea.value = '';
+    called = [];
+    syncRoster();
+    updateButtonState();
+  });
+
+  resetBtn.addEventListener('click', function () {
+    called = [];
+    nameEl.classList.remove('picked');
+    nameEl.classList.add('idle');
+    nameEl.textContent = '准备好了吗？';
+    renderStats();
+    renderHistory();
+    updateButtonState();
+    toast('点名记录已重置');
+  });
+
+  fullscreenBtn.addEventListener('click', function () {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(function () {
+        toast('当前浏览器不支持全屏，可按 F11');
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  });
+
+  loadRoster();
+  updateButtonState();
+
+  /* 仅用于文章截图的演示状态，不影响正常使用 */
+  if (new URLSearchParams(location.search).get('demo') === 'result') {
+    called = ['张小明', '李小红', '王小雨'];
+    nameEl.classList.remove('idle');
+    nameEl.classList.add('picked');
+    nameEl.textContent = '周锦程';
+    statusEl.textContent = '点名结果';
+    sublineEl.textContent = '请 周锦程 同学回答';
+    renderStats();
+    renderHistory();
+  }
+})();
+</script>
+</body>
+</html>
