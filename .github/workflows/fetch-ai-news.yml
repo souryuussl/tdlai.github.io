@@ -3,8 +3,18 @@ name: Fetch AI news draft
 on:
   schedule:
     # 每周两次：周一、周四 UTC 01:00（北京时间 09:00）运行
+    # 周一抓国内源，周四抓海外源（脚本按星期自动判断）
     - cron: "0 1 * * 1,4"
   workflow_dispatch: # 允许在 Actions 页面手动触发
+    inputs:
+      region:
+        description: "抓取区域（auto：周一国内、周四海外；其他日期默认国内）"
+        type: choice
+        options:
+          - auto
+          - cn
+          - global
+        default: auto
 
 permissions:
   contents: write # 需要把生成的草稿提交回仓库
@@ -28,6 +38,7 @@ jobs:
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_PROVIDER: ${{ vars.LLM_PROVIDER }} # 可选，默认 deepseek
+          FETCH_REGION: ${{ inputs.region || 'auto' }}
         run: python scripts/fetch_ai_news.py
 
       - name: Commit and push draft

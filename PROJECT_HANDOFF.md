@@ -33,7 +33,7 @@
 | 主题 | `github.com/hcllmsx/hugo-jijian`（Hugo Modules） |
 | 搜索 | Pagefind（构建时生成索引） |
 | 部署 | GitHub Actions + GitHub Pages |
-| 自动草稿 | `scripts/fetch_ai_news.py` + `fetch-ai-news.yml`（每周两次：周一、周四 09:00） |
+| 自动草稿 | `scripts/fetch_ai_news.py` + `fetch-ai-news.yml`（每周两次：周一 09:00 抓国内、周四 09:00 抓海外） |
 
 ## 4. 当前目录结构
 
@@ -51,7 +51,7 @@
 ├── layouts/                   # 自定义布局与 shortcode
 ├── assets/css/extended/custom.css
 ├── static/images/             # 文章图片
-├── scripts/fetch_ai_news.py
+├── scripts/fetch_ai_news.py  # 周一国内、周四海外 AI+教育新闻抓取（OpenAI/EdSurge/芥末堆/教育部等）
 ├── legacy/                    # 旧版纯 HTML 页面（不再参与构建）
 ├── hugo.yaml
 ├── go.mod / go.sum
