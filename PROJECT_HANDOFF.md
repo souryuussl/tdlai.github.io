@@ -33,7 +33,7 @@
 | 主题 | `github.com/hcllmsx/hugo-jijian`（Hugo Modules） |
 | 搜索 | Pagefind（构建时生成索引） |
 | 部署 | GitHub Actions + GitHub Pages |
-| 自动草稿 | `scripts/fetch_ai_news.py` + `fetch-ai-news.yml`（每周两次：周一 09:00 抓国内、周四 09:00 抓海外） |
+| 自动草稿 | `scripts/fetch_ai_news.py` + `fetch-ai-news.yml`（每周两次：周一 09:00 抓国内 AI+教育、周四 09:00 抓海外 AI 前沿） |
 
 ## 4. 当前目录结构
 
@@ -51,7 +51,7 @@
 ├── layouts/                   # 自定义布局与 shortcode
 ├── assets/css/extended/custom.css
 ├── static/images/             # 文章图片
-├── scripts/fetch_ai_news.py  # 周一国内、周四海外 AI+教育新闻抓取（OpenAI/EdSurge/芥末堆/教育部等）
+├── scripts/fetch_ai_news.py  # 周一国内 AI+教育、周四海外 AI 前沿抓取（OpenAI/Google AI/DeepMind/EdSurge/芥末堆/教育部等）
 ├── legacy/                    # 旧版纯 HTML 页面（不再参与构建）
 ├── hugo.yaml
 ├── go.mod / go.sum
@@ -86,7 +86,7 @@ hugo server -D --baseURL http://127.0.0.1:1313/
 - 文章目录：所有栏目统一放在 `content/posts/`，文件名 `YYYY-MM-DD-英文缩写.md`，用 `categories` 区分栏目。
 - Front Matter 必填：`title`、`date`、`categories`、`tags`。
 - `categories` 只能是：`工具与攻略`、`AI+教育`、`前沿观察`。
-- **前沿观察更新节奏：** 每周一、周四各一期。定时任务当天上午生成草稿，人工核对后发布。
+- **前沿观察更新节奏：** 每周一、周四各一期；周一国内 AI+教育，周四海外 AI 前沿。定时任务当天上午生成草稿，人工核对后发布。
 - 图片放在 `static/images/`，Markdown 中使用 `/images/xxx.jpg`。
 - 所有文章底部的社交引导块由 `layouts/partials/article-guide.html` + `layouts/_default/single.html` 自动渲染，**不要在正文手动添加 `{{< social-guide >}}`**。
 - 详细写作结构见 [PROJECT_GUIDE.md](PROJECT_GUIDE.md)。

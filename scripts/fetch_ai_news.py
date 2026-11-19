@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""按星期抓取国内/海外 AI+教育新闻，调用 LLM 生成中文「前沿观察」草稿。
+"""按星期抓取国内 AI+教育 / 海外 AI 前沿新闻，调用 LLM 生成中文「前沿观察」草稿。
 
-规则：周一抓国内源，周四抓海外源（其他日期默认国内，可用 --region 覆盖）。
+规则：周一抓国内 AI+教育源，周四抓海外 AI 前沿源（其他日期默认国内，可用 --region 覆盖）。
 
 用法：
     python scripts/fetch_ai_news.py                  # 按星期自动选择区域
@@ -19,6 +19,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -35,12 +36,17 @@ import feedparser
 #         none   = 全量保留，交给 LLM 筛选
 # region: global / cn，分别控制送入 LLM 的条数，保证国内内容占比
 FEEDS = [
-    # ---- 国外源 ----
-    {"name": "OpenAI", "url": "https://openai.com/news/rss.xml", "kind": "rss", "filter": "edu_en", "region": "global"},
-    {"name": "EdSurge", "url": "https://www.edsurge.com/feed", "kind": "rss", "filter": "none", "region": "global"},
-    {"name": "EdTech Higher Ed", "url": "http://feeds.feedburner.com/EdTechHiEd", "kind": "rss", "filter": "none", "region": "global"},
-    {"name": "EdTech K-12", "url": "http://feeds.feedburner.com/EdTechK12", "kind": "rss", "filter": "none", "region": "global"},
-    # ---- 国内源 ----
+    # ---- 国外：AI 前沿（周四） ----
+    {"name": "OpenAI", "url": "https://openai.com/news/rss.xml", "kind": "rss", "filter": "none", "region": "global", "tier": 3},
+    {"name": "Google AI", "url": "https://blog.google/technology/ai/rss/", "kind": "rss", "filter": "none", "region": "global", "tier": 3},
+    {"name": "DeepMind", "url": "https://deepmind.google/blog/rss.xml", "kind": "rss", "filter": "none", "region": "global", "tier": 3},
+    {"name": "The Verge AI", "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "kind": "rss", "filter": "ai_title_en", "region": "global", "tier": 2},
+    {"name": "Wired AI", "url": "https://www.wired.com/feed/tag/ai/latest/rss", "kind": "rss", "filter": "ai_title_en", "region": "global", "tier": 2},
+    {"name": "ZDNet AI", "url": "https://www.zdnet.com/topic/artificial-intelligence/rss.xml", "kind": "rss", "filter": "ai_title_en", "region": "global", "tier": 2},
+    {"name": "MIT Tech Review AI", "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed", "kind": "rss", "filter": "ai_title_en", "region": "global", "tier": 2},
+    # ---- 国外：AI+教育（保留一条教师视角） ----
+    {"name": "EdSurge", "url": "https://www.edsurge.com/feed", "kind": "rss", "filter": "ai_title_en", "region": "global", "tier": 1},
+    # ---- 国内：AI+教育（周一） ----
     {"name": "芥末堆", "url": "https://www.jiemodui.com/feed", "kind": "rss", "filter": "ai_zh", "region": "cn"},
     {"name": "量子位", "url": "https://www.qbitai.com/feed", "kind": "rss", "filter": "edu_zh", "region": "cn"},
     {"name": "教育部", "url": "http://www.moe.gov.cn/jyb_xwfb/s5147/", "kind": "html", "filter": "ai_zh", "region": "cn"},
@@ -63,6 +69,15 @@ EDU_KEYWORDS_ZH = [
     "备课", "家长", "幼儿园", "职业院校", "职教", "教材",
 ]
 
+# 英文 AI 关键词：海外 AI 前沿源/科技媒体初筛
+AI_KEYWORDS_EN = [
+    "artificial intelligence", "machine learning", "deep learning",
+    "large language model", "llm", "generative", "ai agent", "agentic",
+    "chatgpt", "openai", "anthropic", "deepmind", "gemini", "claude",
+    "nvidia", "multimodal", "diffusion", "transformer", "neural network",
+    "robotics", "ai ", "ai-", "ai:",
+]
+
 # 中文 AI/数字化关键词：国内教育媒体与政策源只保留 AI 赋能教育相关条目
 AI_KEYWORDS_ZH = [
     "人工智能", "生成式", "大模型", "大语言模型", "智能体", "智慧教育",
@@ -80,7 +95,7 @@ DAYS_BACK = 5        # 只取最近 5 天的条目（覆盖每周两次抓取之
 MAX_PER_FEED = 5     # 每个源最多取 5 条
 MAX_GLOBAL = 8       # 送入 LLM 的海外条目上限
 MAX_CN = 8           # 送入 LLM 的国内条目上限
-MAX_PER_SOURCE_RESULT = 3  # 最终结果中单个源最多保留的条数，避免单源占满名额
+MAX_PER_SOURCE_RESULT = 2  # 最终结果中单个源最多保留的条数，避免单源占满名额
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36")
@@ -96,18 +111,18 @@ FETCH_REGION = os.environ.get("FETCH_REGION", "auto").strip().lower()
 CST = timezone(timedelta(hours=8))  # 北京时间
 REGION_LABELS = {"cn": "国内", "global": "海外"}
 
-PROMPT_TEMPLATE = """你是一位资深教育科技编辑，长期为教育从业者（一线教师、教研员、学校管理者）撰写「前沿观察」专栏。本期抓取范围：{region_desc}。下面是最近几天抓取的新闻素材（JSON 数组，含 source / region / title / link / summary 字段）。
+PROMPT_TEMPLATE = """{persona}本期抓取范围：{region_desc}。下面是最近几天抓取的新闻素材（JSON 数组，含 source / region / title / link / summary 字段）。
 
 写作要求：
-0. 【结构】正文最开头写 2-3 句导语（不加小标题），概括本期最值得教育从业者关注的动向；导语结束后另起一行写 <!--more-->（Hugo 摘要截断标签），然后再进入第一个 ## 小标题。
-1. 【严格筛选】优先保留与课堂教学、学生学习、教师备课/批改、教育政策边界、学校落地实践相关的内容。纯技术发布（新模型、新工具、纯研究）和融资、商业新闻一律忽略，即使它们出现在素材里；某条新闻与教育的关联如果需要拐弯抹角才能建立，就放弃它。若素材整体偏少，宁可写短也不要凑数。
+0. 【结构】正文最开头写 2-3 句导语（不加小标题），概括本期最值得读者关注的动向；导语结束后另起一行写 <!--more-->（Hugo 摘要截断标签），然后再进入第一个 ## 小标题。
+1. 【严格筛选】{selection_rule}
 2. 【主题】{topic_rule}
-3. 每个主题拟一个有吸引力的中文小标题（## 二级标题），标题要点明对教育工作者的实际意义，不要平铺直叙。
-4. 语言专业但不晦涩：面向一线教育从业者，不可避免的技术术语首次出现时用一句话解释清楚。严禁出现「据悉」「该文章指出」「据报道」「值得注意的是」这类生硬翻译腔词汇。
+3. 每个主题拟一个有吸引力的中文小标题（## 二级标题），标题要点明对读者的实际意义，不要平铺直叙。
+4. 语言专业但不晦涩：面向教师读者，不可避免的技术术语首次出现时用一句话解释清楚。严禁出现「据悉」「该文章指出」「据报道」「值得注意的是」这类生硬翻译腔词汇。
 5. {detail_rule}
-6. 全文 800-1200 字，段落与列表混排，详略得当。
-7. 【本土化延伸】主体报道之后，用「## 这对国内教师意味着什么」开一个小节，用 2-4 句话点评上述趋势对国内教师的实际影响，要具体、不说空话。
-8. 【落地建议】再加一个「## 一线教师可以怎么做」小节，给出 2-3 条具体可操作的建议，优先推荐国内可直接使用的工具（如豆包、DeepSeek、希沃、WorkBuddy 等）；若素材没有直接对应的做法，可基于报道趋势合理推演，但必须注明这是编辑建议而非新闻事实。
+6. {length_rule}
+7. 【本土化延伸】{local_rule}
+8. 【落地建议】{action_rule}
 9. 文末设「参考来源」一节，用 Markdown 列表统一附上引用过的原新闻链接，格式：- [来源名：文章标题](链接)。
 10. 最后另起一段写：> 编辑注：本文由自动化工作流生成，发布前需人工核对事实与表述。
 11. 只输出正文 Markdown，不要输出 YAML front matter，不要任何额外解释或寒暄。
@@ -117,14 +132,24 @@ PROMPT_TEMPLATE = """你是一位资深教育科技编辑，长期为教育从�
 
 PROMPT_REGION_CONFIG = {
     "cn": {
+        "persona": "你是一位资深教育科技编辑，长期为教育从业者（一线教师、教研员、学校管理者）撰写「前沿观察」专栏。",
         "region_desc": "国内教育媒体与主管部门（教育部、中国教育报、中国教育在线、芥末堆、量子位）",
+        "selection_rule": "优先保留与课堂教学、学生学习、教师备课/批改、教育政策边界、学校落地实践相关的内容。纯技术发布（新模型、新工具、纯研究）和融资、商业新闻一律忽略，即使它们出现在素材里；某条新闻与教育的关联如果需要拐弯抹角才能建立，就放弃它。若素材整体偏少，宁可写短也不要凑数。",
         "topic_rule": "把筛选后的素材视为一个整体，提炼 2-4 个国内 AI 教育主题（例如：政策与治理、区域/学校落地实践、教师培训与减负、企业产品进校园、学生使用与评价）。围绕主题综合报道，同一主题下不同来源的新闻要合并叙述、点出关联，严禁逐条罗列或翻译。",
         "detail_rule": "国内动态要具体到政策名称、地区、学校或产品（素材里有的信息必须保留），让国内教师能对上自己的工作场景；素材没有的细节不要编造。",
+        "length_rule": "全文 800-1200 字，段落与列表混排，详略得当。",
+        "local_rule": "主体报道之后，用「## 这对国内教师意味着什么」开一个小节，用 2-4 句话点评上述趋势对国内教师的实际影响，要具体、不说空话。",
+        "action_rule": "再加一个「## 一线教师可以怎么做」小节，给出 2-3 条具体可操作的建议，优先推荐国内可直接使用的工具（如豆包、DeepSeek、希沃、WorkBuddy 等）；若素材没有直接对应的做法，可基于报道趋势合理推演，但必须注明这是编辑建议而非新闻事实。",
     },
     "global": {
-        "region_desc": "海外教育科技媒体（EdSurge、EdTech Magazine、OpenAI 等）",
-        "topic_rule": "把筛选后的素材视为一个整体，提炼 2-4 个海外 AI 教育趋势主题（例如：AI 进课堂、教师工作与评价、学习方式变化、教育治理与政策）。围绕主题综合报道，同一主题下不同来源的新闻要合并叙述、点出关联，严禁逐条罗列或翻译。",
-        "detail_rule": "写清趋势背后的机制、政策背景和对学校/教师的具体影响，不要只停留在现象描述；素材没有的细节不要编造。",
+        "persona": "你是一位资深 AI 科技编辑，长期跟踪海外 AI 前沿，同时熟悉一线教师和学校场景，为「前沿观察」专栏撰稿。",
+        "region_desc": "海外 AI 前沿媒体、实验室与教育科技媒体（OpenAI、Google AI、DeepMind、The Verge、Wired、ZDNet、MIT Technology Review、EdSurge 等）",
+        "selection_rule": "优先保留真正有信息量的 AI 前沿动态：模型与能力进展、AI 产品与工具、智能体与自动化、开源与研究、AI 治理与安全、行业应用与工作方式变化。不要因为「与教育无关」而删掉重要新闻；但也不要收纯营销稿、融资快讯、没有实质内容的观点文。若素材里有直接关系教师、学校、学习的内容，优先保留并放在合适的主题下。",
+        "topic_rule": "把素材视为一组 AI 前沿动态，提炼 2-4 个主题（例如：模型与能力、产品与工具、智能体与自动化、开源与研究、治理与安全、AI 与教育/工作）。围绕主题综合报道，同一主题下不同来源的新闻要合并叙述、点出关联，严禁逐条罗列或翻译。教育类新闻不必单独成篇，除非它确实是本期最重要的信号。",
+        "detail_rule": "写清技术/产品进展的机制、影响和边界；对教师读者，解释它可能改变什么、不能改变什么。素材没有的细节不要编造。",
+        "length_rule": "全文 1000-1500 字，段落与列表混排，详略得当；如果素材不足以支撑长文，宁可写短，不要凑数。",
+        "local_rule": "主体报道之后，用「## 这对国内教师意味着什么」开一个小节，用 2-4 句话点评这些海外 AI 前沿对国内教师的实际影响；如果关系不直接，就诚实说明「这更像是行业信号，短期对课堂影响有限」，不要硬凑。",
+        "action_rule": "再加一个「## 可以怎么用/怎么判断」小节，给出 2-3 条建议，分成「值得关注 / 可以试用 / 先观望」三类并说明理由；若素材没有直接对应的做法，可基于报道趋势合理推演，但必须注明这是编辑建议而非新闻事实。",
     },
 }
 
@@ -136,6 +161,8 @@ def matches_filter(text, mode):
     low = text.lower()
     if mode == "edu_en":
         return any(kw in low for kw in EDU_KEYWORDS_EN)
+    if mode in ("ai_en", "ai_title_en"):
+        return any(kw in low for kw in AI_KEYWORDS_EN) or bool(AI_RE.search(low))
     if mode == "edu_zh":
         return any(kw in text for kw in EDU_KEYWORDS_ZH)
     if mode == "ai_zh":
@@ -144,25 +171,33 @@ def matches_filter(text, mode):
 
 
 def http_get(url):
-    """带 UA 和超时地获取页面，按响应头/常见编码解码。"""
-    req = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": UA,
-            "Accept": "application/rss+xml, application/xml, text/xml, text/html;q=0.9, */*;q=0.8",
-        },
-    )
-    with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
-        raw = resp.read()
-        charset = resp.headers.get_content_charset()
-    for enc in (charset, "utf-8", "gbk"):
-        if not enc:
-            continue
+    """带 UA、超时和重试地获取页面，按响应头/常见编码解码。"""
+    last_error = None
+    for attempt in range(2):
         try:
-            return raw.decode(enc)
-        except (LookupError, UnicodeDecodeError):
-            continue
-    return raw.decode("utf-8", "ignore")
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": UA,
+                    "Accept": "application/rss+xml, application/xml, text/xml, text/html;q=0.9, */*;q=0.8",
+                },
+            )
+            with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
+                raw = resp.read()
+                charset = resp.headers.get_content_charset()
+            for enc in (charset, "utf-8", "gbk"):
+                if not enc:
+                    continue
+                try:
+                    return raw.decode(enc)
+                except (LookupError, UnicodeDecodeError):
+                    continue
+            return raw.decode("utf-8", "ignore")
+        except Exception as e:
+            last_error = e
+            if attempt == 0:
+                time.sleep(1.5)
+    raise last_error
 
 
 def parse_entry_time(entry):
@@ -183,6 +218,7 @@ def make_item(feed, title, link, summary, published):
         "published": published.isoformat() if published else "",
         "summary": summary[:600],
         "_sort": published.timestamp() if published else 0,
+        "_tier": feed.get("tier", 2),
     }
 
 
@@ -202,7 +238,8 @@ def fetch_rss(feed, cutoff):
         summary = getattr(entry, "summary", "") or ""
         summary = re.sub(r"<[^>]+>", "", summary)  # 去 HTML 标签
         summary = re.sub(r"\s+", " ", summary).strip()
-        if not matches_filter(title + " " + summary, feed["filter"]):
+        filter_text = title if feed["filter"] == "ai_title_en" else title + " " + summary
+        if not matches_filter(filter_text, feed["filter"]):
             continue
         items.append(make_item(
             feed, title, (getattr(entry, "link", "") or "").strip(),
@@ -285,17 +322,34 @@ def fetch_entries(region):
         pool.extend(items)
 
     def pick(candidates, limit):
-        """按时间倒序选取，同时限制单源条数，避免一个源占满名额。"""
-        per_source = {}
-        chosen = []
+        """先保证每个源最多一条，再按剩余名额补足；单源最多 MAX_PER_SOURCE_RESULT 条。"""
+        by_source = {}
         for it in sorted(candidates, key=lambda x: x["_sort"], reverse=True):
-            count = per_source.get(it["source"], 0)
-            if count >= MAX_PER_SOURCE_RESULT:
-                continue
-            per_source[it["source"]] = count + 1
-            chosen.append(it)
-            if len(chosen) >= limit:
-                break
+            by_source.setdefault(it["source"], []).append(it)
+
+        # 第一轮：每个源取最新一条，按 tier（官方实验室 > 媒体 > 教育）和时间排序
+        first = [items[0] for items in by_source.values()]
+        first.sort(key=lambda x: (x["_tier"], x["_sort"]), reverse=True)
+        chosen = first[:limit]
+        chosen_ids = {id(it) for it in chosen}
+
+        # 第二轮：名额没用完时，用各源剩余条目按时间补足
+        per_source = {}
+        for it in chosen:
+            per_source[it["source"]] = per_source.get(it["source"], 0) + 1
+        if len(chosen) < limit:
+            for it in sorted(candidates, key=lambda x: x["_sort"], reverse=True):
+                if id(it) in chosen_ids:
+                    continue
+                if per_source.get(it["source"], 0) >= MAX_PER_SOURCE_RESULT:
+                    continue
+                per_source[it["source"]] = per_source.get(it["source"], 0) + 1
+                chosen.append(it)
+                chosen_ids.add(id(it))
+                if len(chosen) >= limit:
+                    break
+
+        chosen.sort(key=lambda x: x["_sort"], reverse=True)
         return chosen
 
     limit = MAX_CN if region == "cn" else MAX_GLOBAL
@@ -303,6 +357,7 @@ def fetch_entries(region):
     picked.sort(key=lambda x: x["_sort"], reverse=True)
     for it in picked:
         it.pop("_sort", None)
+        it.pop("_tier", None)
     return picked
 
 
@@ -348,13 +403,21 @@ def call_llm(prompt):
 def build_markdown(today, items, article, region):
     """拼装带 front matter 的完整 Markdown。"""
     region_tag = "国内动态" if region == "cn" else "海外观察"
+    if region == "cn":
+        title = f"AI+教育前沿速览（{today}）"
+        tags = f'["AI+教育", "教育科技", "{region_tag}", "自动摘要"]'
+        cover_alt = "AI+教育"
+    else:
+        title = f"AI 前沿速览（{today}）"
+        tags = f'["AI 前沿", "人工智能", "{region_tag}", "自动摘要"]'
+        cover_alt = "AI 前沿观察"
     lines = [
         "---",
-        f'title: "AI+教育前沿速览（{today}）"',
+        f'title: "{title}"',
         f"date: {today}",
         "draft: true",
         'categories: ["前沿观察"]',
-        f'tags: ["AI+教育", "教育科技", "{region_tag}", "自动摘要"]',
+        f"tags: {tags}",
         f"# 本期范围：{REGION_LABELS[region]}",
         "# 本期抓取来源",
         "sources:",
@@ -369,7 +432,7 @@ def build_markdown(today, items, article, region):
         "# 封面图",
         "cover:",
         '  image: "/images/ai-edu-cover.jpg"',
-        '  alt: "AI+教育"',
+        f'  alt: "{cover_alt}"',
         "---",
         "",
         article.strip(),
