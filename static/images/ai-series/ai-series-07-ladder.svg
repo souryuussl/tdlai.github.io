@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <defs>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#3A3036" flood-opacity="0.08"/>
+    </filter>
+    <filter id="softSmall" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#3A3036" flood-opacity="0.07"/>
+    </filter>
+    <linearGradient id="coverBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFDFB"/>
+      <stop offset="55%" stop-color="#FFF9F6"/>
+      <stop offset="100%" stop-color="#FDF1F5"/>
+    </linearGradient>
+    <linearGradient id="pinkGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F2A9BE"/>
+      <stop offset="100%" stop-color="#E58AA5"/>
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#A9D8E8"/>
+      <stop offset="100%" stop-color="#8FC9DE"/>
+    </linearGradient>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#E7C9D4" opacity="0.55"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="760" fill="#FFFDFB"/>
+  <rect x="60" y="48" width="312" height="38" rx="19" fill="#FBE7EE" stroke="none" stroke-width="1.5" opacity="1"/><text x="216" y="73.12" font-size="17" font-weight="700" fill="#B2506F" text-anchor="middle" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>AI 赋能教学 · 第 07 篇</text>
+  <text x="60" y="132" font-size="38" font-weight="700" fill="#3A3036" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>AI 编程：先打底，再提速</text>
+  <text x="62" y="170" font-size="21" font-weight="400" fill="#8D7C82" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>按能力门槛分阶段，不按年龄一刀切</text>
+<line x1="100" y1="490" x2="1080" y2="250" stroke="#E2B36A" stroke-width="3" stroke-linecap="round"/><path d="M1080 250 L1073.4998959636994 256.22484116401915 L1071.359077399286 247.4831653593314 Z" fill="#E2B36A"/>
+<text x="1010" y="224" font-size="16" font-weight="400" fill="#9A6B2F" text-anchor="middle" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>能力门槛</text>
+<rect x="70" y="520" width="310" height="120" rx="18" fill="#FBE7EE" stroke="#F0C9D5" stroke-width="1.5" opacity="1" filter="url(#soft)"/>
+<text x="96" y="564" font-size="26" font-weight="700" fill="#B2506F" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>手写打底</text>
+<text x="96" y="600" font-size="16" font-weight="400" fill="#8D7C82" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>拆问题 · 定位错误 · 判断好坏</text>
+<rect x="390" y="400" width="310" height="240" rx="18" fill="#E8F4F8" stroke="#CBE6EF" stroke-width="1.5" opacity="1" filter="url(#soft)"/>
+<text x="416" y="444" font-size="26" font-weight="700" fill="#4F8FA8" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>辅助提效</text>
+<text x="416" y="480" font-size="16" font-weight="400" fill="#8D7C82" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>解释每一行 · 补测试 · 重构</text>
+<text x="416" y="512" font-size="16" font-weight="400" fill="#8D7C82" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>能改、能解释、能测试</text>
+<rect x="710" y="280" width="310" height="360" rx="18" fill="#E9F4EE" stroke="#CFE5D9" stroke-width="1.5" opacity="1" filter="url(#soft)"/>
+<text x="736" y="324" font-size="26" font-weight="700" fill="#5B9E7E" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>独立交付</text>
+<text x="736" y="360" font-size="16" font-weight="400" fill="#8D7C82" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>AI 生成 + 人工审查 + 测试</text>
+<text x="736" y="392" font-size="16" font-weight="400" fill="#8D7C82" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>设计评审 · 代码评审 · 测试记录</text>
+<text x="736" y="424" font-size="16" font-weight="400" fill="#8D7C82" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>关键模块必须有人看懂</text>
+<text x="70" y="690" font-size="18" font-weight="700" fill="#8D7C82" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>三条通用红线</text>
+<rect x="200" y="666" width="150" height="34" rx="17" fill="#FBEAEA" stroke="none" stroke-width="1.5" opacity="1"/><text x="275" y="688.76" font-size="16" font-weight="600" fill="#C96A6A" text-anchor="middle" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>人工复核</text>
+<rect x="370" y="666" width="150" height="34" rx="17" fill="#FBEAEA" stroke="none" stroke-width="1.5" opacity="1"/><text x="445" y="688.76" font-size="16" font-weight="600" fill="#C96A6A" text-anchor="middle" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>敏感数据</text>
+<rect x="540" y="666" width="150" height="34" rx="17" fill="#FBEAEA" stroke="none" stroke-width="1.5" opacity="1"/><text x="615" y="688.76" font-size="16" font-weight="600" fill="#C96A6A" text-anchor="middle" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>成本预算</text>
+<text x="720" y="690" font-size="17" font-weight="400" fill="#8D7C82" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>不只适用于写代码，也适用于所有 AI 任务。</text>
+<line x1="60" y1="702" x2="1140" y2="702" stroke="#F0DDE5" stroke-width="1.5"/>
+  <text x="60" y="734" font-size="16" font-weight="400" fill="#8D7C82" text-anchor="start" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>TDLAI · AI 赋能教学系列</text>
+  <text x="1140" y="734" font-size="16" font-weight="400" fill="#8D7C82" text-anchor="end" opacity="1" letter-spacing="0" font-family='"Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", sans-serif'>原创配图 · 可替换为实际截图</text>
+</svg>
