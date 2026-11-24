@@ -168,7 +168,7 @@ draft: false
 **系列导航**
 
 - 上一篇：[AI、大模型、智能体是什么关系？五个阶段，一次讲清]({{< relref "/posts/2026-11-25-ai-llm-agent-five-boxes.md" >}})
-- 下一篇：[别再背提示词模板了：三个问题划清 AI 的能力边界]({{< relref "/posts/2026-12-02-prompt-three-questions.md" >}})
+- 下一篇（12 月 2 日）：别再背提示词模板了：三个问题划清 AI 的能力边界
 - 系列标签：[AI 赋能教学]({{< relref "/tags/ai-赋能教学" >}})
 
 **视频版**
